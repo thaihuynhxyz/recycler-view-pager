@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">View Pager</string>
     <string name="scrollview">ScrollView</string>
+    <string name="recycler_item">Recycler Item%d</string>
 
 
     <string-array name="list_items">
