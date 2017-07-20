@@ -19,22 +19,14 @@ public class RecyclerViewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.recycler_view_fragment, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-
+        RecyclerView recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(new RecyclerView.Adapter() {
 
             @Override
 
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new RecyclerView.ViewHolder(new TextView(parent.getContext())) {
-                };
+                return new RecyclerView.ViewHolder(new TextView(parent.getContext())) {};
             }
 
             @Override
@@ -47,5 +39,6 @@ public class RecyclerViewFragment extends Fragment {
                 return 100;
             }
         });
+        return recyclerView;
     }
 }

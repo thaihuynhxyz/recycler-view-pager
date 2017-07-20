@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerViewFragmentPager pager = (RecyclerViewFragmentPager) findViewById(R.id.pager);
         List<Fragment> fragmentList = new ArrayList<>();
+        fragmentList.add(CoordinatorFragment.newInstance());
         fragmentList.add(ScrollViewFragment.newInstance());
         fragmentList.add(ListViewFragment.newInstance());
         fragmentList.add(RecyclerViewFragment.newInstance());

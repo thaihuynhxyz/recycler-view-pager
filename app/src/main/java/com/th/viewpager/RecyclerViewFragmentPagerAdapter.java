@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerViewFragmentPagerAdapter.ViewHolder> {
+class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
@@ -25,12 +25,12 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.frame_layout, parent, false));
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.frame_layout, parent, false)) {};
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             while (true) {
                 final int result = sNextGeneratedId.get();
@@ -49,13 +49,13 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
     }
 
     @Override
-    public void onViewAttachedToWindow(ViewHolder holder) {
+    public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         mFragmentManager.beginTransaction().replace(holder.itemView.getId(), mFragmentList.get(holder.getAdapterPosition())).commit();
     }
 
     @Override
-    public void onViewDetachedFromWindow(ViewHolder holder) {
+    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
         mFragmentManager.beginTransaction().remove(mFragmentManager.findFragmentById(holder.itemView.getId())).commit();
     }
@@ -63,12 +63,5 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
     @Override
     public int getItemCount() {
         return mFragmentList.size();
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        ViewHolder(View itemView) {
-            super(itemView);
-        }
     }
 }
