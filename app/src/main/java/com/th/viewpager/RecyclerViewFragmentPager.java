@@ -20,33 +20,6 @@ import java.util.List;
 
 public class RecyclerViewFragmentPager extends RecyclerView implements NestedScrollingParent {
 
-    private RecyclerViewFragmentPagerAdapter mAdapter;
-
-    public RecyclerViewFragmentPager(Context context) {
-        this(context, null);
-    }
-
-    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-
-        setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        new PagerSnapHelper().attachToRecyclerView(this);
-
-        final float density = context.getResources().getDisplayMetrics().density;
-        mDefaultGutterSize = (int) (DEFAULT_GUTTER_SIZE * density);
-
-        mTouchSlop = ViewConfiguration.get(context).getScaledPagingTouchSlop();
-    }
-
-    public void addFragments(FragmentManager fragmentManager, List<Fragment> fragmentList) {
-        mAdapter = new RecyclerViewFragmentPagerAdapter(fragmentManager, fragmentList);
-        setAdapter(mAdapter);
-    }
-
     private static final String TAG = RecyclerViewFragmentPager.class.getSimpleName();
     private static final boolean DEBUG = false;
 
@@ -79,6 +52,33 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
     private float mInitialMotionY;
 
     private int mScrollState = SCROLL_STATE_IDLE;
+
+    private RecyclerViewFragmentPagerAdapter mAdapter;
+
+    public RecyclerViewFragmentPager(Context context) {
+        this(context, null);
+    }
+
+    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+
+        setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+        new PagerSnapHelper().attachToRecyclerView(this);
+
+        final float density = context.getResources().getDisplayMetrics().density;
+        mDefaultGutterSize = (int) (DEFAULT_GUTTER_SIZE * density);
+
+        mTouchSlop = ViewConfiguration.get(context).getScaledPagingTouchSlop();
+    }
+
+    public void addFragments(FragmentManager fragmentManager, List<Fragment> fragmentList) {
+        mAdapter = new RecyclerViewFragmentPagerAdapter(fragmentManager, fragmentList);
+        setAdapter(mAdapter);
+    }
 
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
@@ -265,12 +265,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                         }
                     }
                 }
-                // Not else! Note that mIsBeingDragged can be set above.
-                if (mIsBeingDragged) {
-                    // Scroll to follow the motion event
-                    final int activePointerIndex = ev.findPointerIndex(mActivePointerId);
-                    final float x = ev.getX(activePointerIndex);
-                }
                 break;
             case MotionEvent.ACTION_UP:
                 if (mIsBeingDragged) {
@@ -284,8 +278,7 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                 break;
             case MotionEvent.ACTION_POINTER_DOWN: {
                 final int index = ev.getActionIndex();
-                final float x = ev.getX(index);
-                mLastMotionX = x;
+                mLastMotionX = ev.getX(index);
                 mActivePointerId = ev.getPointerId(index);
                 break;
             }
