@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -19,9 +18,6 @@ import android.view.ViewParent;
 import java.util.List;
 
 public class RecyclerViewFragmentPager extends RecyclerView implements NestedScrollingParent {
-
-    private static final String TAG = RecyclerViewFragmentPager.class.getSimpleName();
-    private static final boolean DEBUG = false;
 
     private static final int DEFAULT_GUTTER_SIZE = 16; // dips
 
@@ -101,7 +97,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
         // Always take care of the touch gesture being complete.
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             // Release the drag.
-            if (DEBUG) Log.v(TAG, "Intercept done!");
             resetTouch();
             return false;
         }
@@ -110,11 +105,9 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
         // are dragging.
         if (action != MotionEvent.ACTION_DOWN) {
             if (mIsBeingDragged) {
-                if (DEBUG) Log.v(TAG, "Intercept returning true!");
                 return super.onInterceptTouchEvent(ev);
             }
             if (mIsUnableToDrag) {
-                if (DEBUG) Log.v(TAG, "Intercept returning false!");
                 return false;
             }
         }
@@ -142,7 +135,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                 final float xDiff = Math.abs(dx);
                 final float y = ev.getY(pointerIndex);
                 final float yDiff = Math.abs(y - mInitialMotionY);
-                if (DEBUG) Log.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
 
                 if (dx != 0 && !isGutterDrag(mLastMotionX, dx)
                         && canScroll(this, false, (int) dx, (int) x, (int) y)) {
@@ -153,7 +145,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                     return false;
                 }
                 if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
-                    if (DEBUG) Log.v(TAG, "Starting drag!");
                     mIsBeingDragged = true;
                     requestParentDisallowInterceptTouchEvent(true);
                     setScrollState(SCROLL_STATE_DRAGGING);
@@ -165,7 +156,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                     // direction to be counted as a drag...  abort
                     // any attempt to drag horizontally, to work correctly
                     // with children that have scrolling containers.
-                    if (DEBUG) Log.v(TAG, "Starting unable to drag!");
                     mIsUnableToDrag = true;
                 }
                 break;
@@ -189,12 +179,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                 } else {
                     mIsBeingDragged = false;
                 }
-
-                if (DEBUG) {
-                    Log.v(TAG, "Down at " + mLastMotionX + "," + mLastMotionY
-                            + " mIsBeingDragged=" + mIsBeingDragged
-                            + "mIsUnableToDrag=" + mIsUnableToDrag);
-                }
                 break;
             }
 
@@ -207,7 +191,7 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
          * The only time we want to intercept motion events is if we are in the
          * drag mode.
          */
-        return mIsBeingDragged && super.onInterceptTouchEvent(ev);
+        return super.onInterceptTouchEvent(ev) && mIsBeingDragged;
     }
 
     @Override
@@ -246,11 +230,7 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
                     final float xDiff = Math.abs(x - mLastMotionX);
                     final float y = ev.getY(pointerIndex);
                     final float yDiff = Math.abs(y - mLastMotionY);
-                    if (DEBUG) {
-                        Log.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
-                    }
                     if (xDiff > mTouchSlop && xDiff > yDiff) {
-                        if (DEBUG) Log.v(TAG, "Starting drag!");
                         mIsBeingDragged = true;
                         requestParentDisallowInterceptTouchEvent(true);
                         mLastMotionX = x - mInitialMotionX > 0 ? mInitialMotionX + mTouchSlop :
