@@ -29,29 +29,32 @@ class FragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         FrameLayout frameLayout = new FrameLayout(parent.getContext());
         frameLayout.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        return new RecyclerView.ViewHolder(frameLayout) {};
+        return new RecyclerView.ViewHolder(frameLayout) {
+        };
     }
 
     @Override
     public long getItemId(int position) {
-        int id;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            while (true) {
-                final int result = sNextGeneratedId.get();
-                // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
-                int newValue = result + 1;
-                if (newValue > 0x00FFFFFF)
-                    newValue = 1; // Roll over to 1, not 0.
-                if (sNextGeneratedId.compareAndSet(result, newValue)) {
-                    id = result;
-                    break;
+        int id = mFragmentList.get(position).getId();
+        if (id == 0) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                while (true) {
+                    final int result = sNextGeneratedId.get();
+                    // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+                    int newValue = result + 1;
+                    if (newValue > 0x00FFFFFF)
+                        newValue = 1; // Roll over to 1, not 0.
+                    if (sNextGeneratedId.compareAndSet(result, newValue)) {
+                        id = result;
+                        break;
+                    }
                 }
+            } else {
+                id = View.generateViewId();
             }
-        } else {
-            id = View.generateViewId();
         }
-        if (mIdArray[position] == 0) mIdArray[position] = id;
-        return mIdArray[position];
+        mIdArray[position] = id;
+        return id;
     }
 
     @Override
@@ -65,11 +68,17 @@ class FragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             @Override
             public void onViewAttachedToWindow(View v) {
                 holder.itemView.removeOnAttachStateChangeListener(this);
-                mFragmentManager.beginTransaction().add(holder.itemView.getId(), mFragmentList.get(holder.getAdapterPosition())).commitNowAllowingStateLoss();
+                Fragment fragment = mFragmentList.get(holder.getAdapterPosition());
+                if (mFragmentManager.findFragmentById(fragment.getId()) != null) {
+                    mFragmentManager.beginTransaction().remove(fragment).add(holder.itemView.getId(), fragment).commitNowAllowingStateLoss();
+                } else {
+                    mFragmentManager.beginTransaction().add(holder.itemView.getId(), fragment).commitNowAllowingStateLoss();
+                }
             }
 
             @Override
-            public void onViewDetachedFromWindow(View v) {}
+            public void onViewDetachedFromWindow(View v) {
+            }
         });
     }
 
