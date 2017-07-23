@@ -344,4 +344,15 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
 
         mScrollState = newState;
     }
+
+    @Override
+    public void smoothScrollToPosition(final int position) {
+        super.smoothScrollToPosition(position);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                scrollToPosition(position);
+            }
+        }, 256);
+    }
 }

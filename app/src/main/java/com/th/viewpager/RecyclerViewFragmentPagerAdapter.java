@@ -5,9 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +18,7 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
 
     private final FragmentManager mFragmentManager;
     private final List<Fragment> mFragmentList;
+    private int[] mIdArray;
 
     RecyclerViewFragmentPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull List<Fragment> fragmentList) {
         mFragmentManager = fragmentManager;
@@ -26,11 +27,14 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.frame_layout, parent, false)) {};
+        FrameLayout frameLayout = new FrameLayout(parent.getContext());
+        frameLayout.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        return new RecyclerView.ViewHolder(frameLayout) {};
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public long getItemId(int position) {
+        int id;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             while (true) {
                 final int result = sNextGeneratedId.get();
@@ -39,13 +43,34 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
                 if (newValue > 0x00FFFFFF)
                     newValue = 1; // Roll over to 1, not 0.
                 if (sNextGeneratedId.compareAndSet(result, newValue)) {
-                    holder.itemView.setId(result);
+                    id = result;
                     break;
                 }
             }
         } else {
-            holder.itemView.setId(View.generateViewId());
+            id = View.generateViewId();
         }
+        if (mIdArray[position] == 0) mIdArray[position] = id;
+        return mIdArray[position];
+    }
+
+    @Override
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+        Fragment oldFragment = mFragmentManager.findFragmentById(holder.itemView.getId());
+        if (oldFragment != null) {
+            mFragmentManager.beginTransaction().remove(oldFragment).commitNowAllowingStateLoss();
+        }
+        holder.itemView.setId((int) getItemId(position));
+        holder.itemView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                holder.itemView.removeOnAttachStateChangeListener(this);
+                mFragmentManager.beginTransaction().add(holder.itemView.getId(), mFragmentList.get(holder.getAdapterPosition())).commitNowAllowingStateLoss();
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {}
+        });
     }
 
     @Override
@@ -62,6 +87,8 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public int getItemCount() {
-        return mFragmentList.size();
+        final int size = mFragmentList.size();
+        if (mIdArray == null || size != mIdArray.length) mIdArray = new int[size];
+        return size;
     }
 }
