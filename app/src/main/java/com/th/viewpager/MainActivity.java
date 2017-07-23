@@ -14,12 +14,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RecyclerViewFragmentPager pager = (RecyclerViewFragmentPager) findViewById(R.id.pager);
+        RecyclerViewPager pager = (RecyclerViewPager) findViewById(R.id.pager);
         List<Fragment> fragmentList = new ArrayList<>();
         fragmentList.add(CoordinatorFragment.newInstance());
         fragmentList.add(ScrollViewFragment.newInstance());
         fragmentList.add(ListViewFragment.newInstance());
         fragmentList.add(RecyclerViewFragment.newInstance());
-        pager.addFragments(getSupportFragmentManager(), fragmentList);
+        FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager(), fragmentList);
+        pager.setAdapter(adapter);
+        pager.setItemViewCacheSize(4);
     }
 }

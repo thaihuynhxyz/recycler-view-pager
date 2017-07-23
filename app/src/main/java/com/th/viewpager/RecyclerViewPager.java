@@ -2,8 +2,6 @@ package com.th.viewpager;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.NestedScrollingParent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
@@ -15,9 +13,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import java.util.List;
-
-public class RecyclerViewFragmentPager extends RecyclerView implements NestedScrollingParent {
+public class RecyclerViewPager extends RecyclerView implements NestedScrollingParent {
 
     private static final int DEFAULT_GUTTER_SIZE = 16; // dips
 
@@ -49,17 +45,15 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
 
     private int mScrollState = SCROLL_STATE_IDLE;
 
-    private RecyclerViewFragmentPagerAdapter mAdapter;
-
-    public RecyclerViewFragmentPager(Context context) {
+    public RecyclerViewPager(Context context) {
         this(context, null);
     }
 
-    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs) {
+    public RecyclerViewPager(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerViewFragmentPager(Context context, @Nullable AttributeSet attrs, int defStyle) {
+    public RecyclerViewPager(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
@@ -69,11 +63,6 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
         mDefaultGutterSize = (int) (DEFAULT_GUTTER_SIZE * density);
 
         mTouchSlop = ViewConfiguration.get(context).getScaledPagingTouchSlop();
-    }
-
-    public void addFragments(FragmentManager fragmentManager, List<Fragment> fragmentList) {
-        mAdapter = new RecyclerViewFragmentPagerAdapter(fragmentManager, fragmentList);
-        setAdapter(mAdapter);
     }
 
     @Override
@@ -202,7 +191,7 @@ public class RecyclerViewFragmentPager extends RecyclerView implements NestedScr
             return false;
         }
 
-        if (mAdapter == null || mAdapter.getItemCount() == 0) {
+        if (getAdapter() == null || getAdapter().getItemCount() == 0) {
             // Nothing to present or scroll; nothing to touch.
             return false;
         }

@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class FragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
@@ -20,7 +20,7 @@ class RecyclerViewFragmentPagerAdapter extends RecyclerView.Adapter<RecyclerView
     private final List<Fragment> mFragmentList;
     private int[] mIdArray;
 
-    RecyclerViewFragmentPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull List<Fragment> fragmentList) {
+    FragmentPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull List<Fragment> fragmentList) {
         mFragmentManager = fragmentManager;
         mFragmentList = fragmentList;
     }
