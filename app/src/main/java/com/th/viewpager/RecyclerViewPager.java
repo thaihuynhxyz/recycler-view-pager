@@ -1,8 +1,8 @@
 package com.th.viewpager;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v4.view.NestedScrollingParent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +13,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-public class RecyclerViewPager extends RecyclerView implements NestedScrollingParent {
+public class RecyclerViewPager extends RecyclerView {
 
     private static final int DEFAULT_GUTTER_SIZE = 16; // dips
 
@@ -45,6 +45,11 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
 
     private int mScrollState = SCROLL_STATE_IDLE;
 
+    private final LinearLayoutManager mLayoutManager;
+    private OnPageChangeListener mOnPageChangeListener;
+
+    private int mCurrentPosition = 0;
+
     public RecyclerViewPager(Context context) {
         this(context, null);
     }
@@ -56,7 +61,8 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
     public RecyclerViewPager(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+        mLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+        setLayoutManager(mLayoutManager);
         new PagerSnapHelper().attachToRecyclerView(this);
 
         final float density = context.getResources().getDisplayMetrics().density;
@@ -136,7 +142,7 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
                 if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
                     mIsBeingDragged = true;
                     requestParentDisallowInterceptTouchEvent(true);
-                    setScrollState(SCROLL_STATE_DRAGGING);
+                    mScrollState = SCROLL_STATE_DRAGGING;
                     mLastMotionX = dx > 0
                             ? mInitialMotionX + mTouchSlop : mInitialMotionX - mTouchSlop;
                     mLastMotionY = y;
@@ -164,7 +170,7 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
                     // Let the user 'catch' the pager as it animates.
                     mIsBeingDragged = true;
                     requestParentDisallowInterceptTouchEvent(true);
-                    setScrollState(SCROLL_STATE_DRAGGING);
+                    mScrollState = SCROLL_STATE_DRAGGING;
                 } else {
                     mIsBeingDragged = false;
                 }
@@ -183,6 +189,7 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
         return super.onInterceptTouchEvent(ev) && mIsBeingDragged;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN && ev.getEdgeFlags() != 0) {
@@ -225,7 +232,7 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
                         mLastMotionX = x - mInitialMotionX > 0 ? mInitialMotionX + mTouchSlop :
                                 mInitialMotionX - mTouchSlop;
                         mLastMotionY = y;
-                        setScrollState(SCROLL_STATE_DRAGGING);
+                        mScrollState = SCROLL_STATE_DRAGGING;
 
                         // Disallow Parent Intercept, just in case
                         ViewParent parent = getParent();
@@ -326,22 +333,38 @@ public class RecyclerViewPager extends RecyclerView implements NestedScrollingPa
         }
     }
 
-    void setScrollState(int newState) {
-        if (mScrollState == newState) {
-            return;
+    @Override
+    public void onScrolled(int dx, int dy) {
+        super.onScrolled(dx, dy);
+        int firstVisiblePosition = mLayoutManager.findFirstCompletelyVisibleItemPosition();
+        if (mCurrentPosition != firstVisiblePosition && firstVisiblePosition >= 0) {
+            mCurrentPosition = firstVisiblePosition;
+            if (mOnPageChangeListener != null) {
+                mOnPageChangeListener.onPageSelected(firstVisiblePosition);
+            }
         }
+    }
 
-        mScrollState = newState;
+    public void setOnPageChangeListener(OnPageChangeListener listener) {
+        mOnPageChangeListener = listener;
     }
 
     @Override
-    public void smoothScrollToPosition(final int position) {
-        super.smoothScrollToPosition(position);
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                scrollToPosition(position);
-            }
-        }, 256);
+    public void scrollToPosition(int position) {
+        if (position == mLayoutManager.findFirstCompletelyVisibleItemPosition()) {
+            onScrolled(0, 0);
+        } else {
+            super.scrollToPosition(position);
+        }
+    }
+
+    public interface OnPageChangeListener {
+        /**
+         * This method will be invoked when a new page becomes selected. Animation is not
+         * necessarily complete.
+         *
+         * @param position Position index of the new selected page.
+         */
+        void onPageSelected(int position);
     }
 }
